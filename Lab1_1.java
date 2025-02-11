@@ -1,193 +1,165 @@
 import java.util.ArrayList;
 import java.util.List;
 
-
-//Sorting Class
-interface Sorting{
-    List<Product> sort(List<Product> items, int sortingApproach);
-}
-
-
-//Product Class
-class Product{
-    private final int ID;
-    private String name;
-    private double price;
-
-    //constructor for Product
-    public Product(int ID, String name, double price){
-        this.ID = ID;
-        this.name = name;
-        this.price = price;
-
-    }
-
-    //get methods for ID, name, and price
-    public int getID(){
-        return ID;
-    }
-
-    public String getName(){
-        return name;
-    }
-
-    public double getPrice(){
-        return price;
-    }
-
-}
-
-
 public class Lab1_1 {
-    public static void main(String[] args) {
-        // Create a list of products
-        List<Product> products = new ArrayList<>();
-        products.add(new Product(1, "Book", 24.99));
-        products.add(new Product(2, "Bag", 14.99));
-        products.add(new Product(3, "Button", 0.99));
 
-        for (int i = 0; i < products.size(); i++){
-            Product product = products.get(i);
-            System.out.println("ID: " + product.getID() + " Name: " + product.getName() + " Price: " + product.getPrice());
+    /* Product Class
+    id = id # of the product
+    name = name of the product
+    price = price of the product
+    */
+    public static class Product {
+        private final int id;
+        private final String name;
+        private final double price;
+
+        //Product constructor
+        public Product(int id, String name, double price) {
+            this.id = id;
+            this.name = name;
+            this.price = price;
         }
-        
-    }
-}
+        //"get" functions to fetch the id, name, and price of the products
+        public int getId() {
+            return id;
+        }
 
-/*
-// Step 1: Define the Sorting interface
-interface Sorting {
-    List<Product> sort(List<Product> items, int sortingApproach);
-}
+        public String getName() {
+            return name;
+        }
 
-// Step 2: Create the Product class
-class Product {
-    private final int id;
-    private final String name;
-    private final double price;
+        public double getPrice() {
+            return price;
+        }
 
-    public Product(int id, String name, double price) {
-        this.id = id;
-        this.name = name;
-        this.price = price;
     }
 
-    public int getId() {
-        return id;
-    }
+    /*SortingUtility class
+    contains instructions on how to sort the list of products
+    */
+    public static class SortingUtility {
 
-    public String getName() {
-        return name;
-    }
+        //Allows bubbleSort OR quickSort to be picked depending on the value of "sortingApproach"
+        public List<Product> sort(List<Product> products, int sortingApproach) {
+            //bubbleSort
+            if (sortingApproach == 1) {
+                return bubbleSort(products);
+            }
+            //QuickSort 
+            else if (sortingApproach == 2) {
+                return quickSort(products);
+            }
+            //if an invalid "sortingApproach" value is given, the function returns the original product list
+            return products;
+        }
 
-    public double getPrice() {
-        return price;
-    }
-}
+        //logic for the quickSort function
+        private List<Product> quickSort(List<Product> products) {
+            quickSortHelper(products, 0, products.size() - 1);
+            return products;
+        }
 
-// Step 3: Implement the SortingUtility class with bubbleSort and quickSort
-class SortingUtility implements Sorting {
-    
-    private List<Product> bubbleSort(List<Product> items) {
-        List<Product> sortedList = new ArrayList<>(items);
-        for (int i = 0; i < sortedList.size() - 1; i++) {
-            for (int j = 0; j < sortedList.size() - 1 - i; j++) {
-                if (sortedList.get(j).getPrice() > sortedList.get(j + 1).getPrice()) {
-                    Product temp = sortedList.get(j);
-                    sortedList.set(j, sortedList.get(j + 1));
-                    sortedList.set(j + 1, temp);
+        /*QuickSortHelper
+        Recursively sorts through the list of products by repeatedly partitioning half of the list at a time
+        products = list of products to be sorted
+        low = lowest product index number of the product list segment being sorted
+        high = highest product index number of the product list segment being sorted
+        */
+        private void quickSortHelper(List<Product> products, int low, int high) {
+            if (low < high) {
+                //partiotions the current segment of the product list
+                int p = partition(products, low, high);
+                //sorts the left half of the product list segment
+                quickSortHelper(products, low, p - 1);
+                //sorts the right hald of the product list segment
+                quickSortHelper(products, p + 1, high); 
+            }
+        }
+
+        /* Partition is used to separate the list of product into halves for sorting
+        products = list of products to be sorted
+        low = lowest product index number of the product list segment being sorted
+        high = highest product index number of the product list segment being sorted
+        */
+        private int partition(List<Product> products, int low, int high) {
+            //Pivot is set as the last element in the list. It is swapped if the name of the product comes before the product at "i" alphabetically
+            Product pivot = products.get(high);
+            int i = low - 1;
+
+            for (int j = low; j <= high - 1; j++) {
+                //compares the names of the pivot product and the product at index "j" alphabetically
+                if (products.get(j).getName().compareTo(pivot.getName()) < 0) {
+                    i++;
+                    //swaps if the current product name comes first alphabetically compared to the pivot name
+                    swap(products, i, j); 
                 }
             }
+            //swaps the pivot into the correct position
+            swap(products, i + 1, high);
+            //returns the index of the partition
+            return i + 1;
         }
-        return sortedList;
-    }
 
-    private List<Product> quickSort(List<Product> items) {
-        List<Product> sortedList = new ArrayList<>(items);
-        quickSortHelper(sortedList, 0, sortedList.size() - 1);
-        return sortedList;
-    }
-
-    private void quickSortHelper(List<Product> items, int low, int high) {
-        if (low < high) {
-            int pi = partition(items, low, high);
-            quickSortHelper(items, low, pi - 1);
-            quickSortHelper(items, pi + 1, high);
+        /*logic for swapping two elements in the list
+        products = list to be sorted
+        i = element 1 to be swapped
+        j = element 2 to be swapped
+        */
+        private void swap(List<Product> products, int i, int j) {
+            Product temp = products.get(i);
+            products.set(i, products.get(j));
+            products.set(j, temp);
         }
-    }
 
-    private int partition(List<Product> items, int low, int high) {
-        Product pivot = items.get(high);
-        int i = low - 1;
-        for (int j = low; j < high; j++) {
-            if (items.get(j).getPrice() < pivot.getPrice()) {
-                i++;
-                Product temp = items.get(i);
-                items.set(i, items.get(j));
-                items.set(j, temp);
+        //Logic for bubbleSort function
+        private List<Product> bubbleSort(List<Product> products) {
+            int n = products.size();
+            for (int i = 0; i < n - 1; i++) {
+                for (int j = 0; j < n - i - 1; j++) {
+                    //Compares product IDs and swaps accordingly
+                    if (products.get(j).getPrice() > products.get(j + 1).getPrice()) {
+                        swap(products, j, j + 1);
+                    }
+                }
             }
+            return products;
         }
-        Product temp = items.get(i + 1);
-        items.set(i + 1, items.get(high));
-        items.set(high, temp);
-        return i + 1;
     }
 
-    @Override
-    public List<Product> sort(List<Product> items, int sortingApproach) {
-        if (sortingApproach == 1) {
-            return bubbleSort(items);
-        } else if (sortingApproach == 2) {
-            return quickSort(items);
-        }
-        return items;
-    }
-}
-
-// Step 4: Create the LoggingDecorator class
-class LoggingDecorator implements Sorting {
-    private final Sorting sortingUtility;
-
-    public LoggingDecorator(Sorting sortingUtility) {
-        this.sortingUtility = sortingUtility;
-    }
-
-    @Override
-    public List<Product> sort(List<Product> items, int sortingApproach) {
-        List<Product> sortedItems = sortingUtility.sort(items, sortingApproach);
-        if (sortingApproach == 1) {
-            // Bubble sort log format: ID, Name, Price
-            sortedItems.forEach(item -> System.out.println(item.getId() + ", " + item.getName() + ", " + item.getPrice()));
-        } else if (sortingApproach == 2) {
-            // Quick sort log format: Name, ID, Price
-            sortedItems.forEach(item -> System.out.println(item.getName() + ", " + item.getId() + ", " + item.getPrice()));
-        }
-        return sortedItems;
-    }
-}
-
-// Step 5: Test scenarios
-public class Lab1_1 {
     public static void main(String[] args) {
-        // Create a list of products
+        //new product list
         List<Product> products = new ArrayList<>();
-        products.add(new Product(1, "Book", 12.99));
-        products.add(new Product(2, "Bag", 19.99));
-        products.add(new Product(3, "Button", 2.49));
+        products.add(new Product(3, "Shampoo", 5.99));
+        products.add(new Product(10, "Laptop", 899.99));
+        products.add(new Product(8, "Toothpaste", 2.49));
+        products.add(new Product(7, "T-shirt", 12.99));
+        products.add(new Product(5, "Blender", 39.99));
+        products.add(new Product(6, "Headphones", 59.99));
+        products.add(new Product(9, "Soda", 1.49));
+        products.add(new Product(1, "Microwave", 79.99));
+        products.add(new Product(11, "Coffee Maker", 24.99));
+        products.add(new Product(2, "Vacuum Cleaner", 129.99));
+        products.add(new Product(14, "Dish Soap", 3.49));
+        products.add(new Product(12, "Sweater", 19.99));
+        products.add(new Product(15, "Cell Phone", 499.99));
+        products.add(new Product(13, "Cereal", 3.99));
+        products.add(new Product(4, "Table Lamp", 14.99));
 
-        // Create the SortingUtility object
-        Sorting sortingUtility = new SortingUtility();
 
-        // Decorate the SortingUtility with logging functionality
-        Sorting loggingSortingUtility = new LoggingDecorator(sortingUtility);
+        SortingUtility sortingUtility = new SortingUtility();
 
-        // Scenario 1: QuickSort (sortingApproach = 2)
-        System.out.println("QuickSort Sorted Products:");
-        loggingSortingUtility.sort(products, 2);
+        //QuckSort Test Case
+        System.out.println("Using QuickSort:");
+        List<Product> sortedProductsQuickSort = sortingUtility.sort(products, 2);
+        for (Product product : sortedProductsQuickSort) {
+            System.out.println("Product{Id=" + product.getId() + ", Name=" + product.getName() + ", Price=" + product.getPrice() + "}");
+        }
 
-        // Scenario 2: BubbleSort (sortingApproach = 1)
-        System.out.println("\nBubbleSort Sorted Products:");
-        loggingSortingUtility.sort(products, 1);
+        //BubbleSort Test Case
+        System.out.println("\nUsing BubbleSort:");
+        List<Product> sortedProductsBubbleSort = sortingUtility.sort(products, 1);
+        for (Product product : sortedProductsBubbleSort) {
+            System.out.println("Product{Id=" + product.getId() + ", Name=" + product.getName() + ", Price=" + product.getPrice() + "}");
+        }
     }
 }
-*/
